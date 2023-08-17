@@ -5,6 +5,7 @@ import models.Gender;
 import models.Hobby;
 import models.StudentDTO;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 
 import java.util.List;
@@ -83,5 +84,27 @@ public interface HelperStudent extends HelperBase{
 
     default void submit(){
         click(By.id("submit"));
+    }
+
+    default void dataOfBirthday(String day, String month, String year){
+        String[] startDate1 = day.split(" ");
+        String[] startDate2 = month.split(" ");
+        String[] startDate3 = year.split(" ");
+        click(By.id("dateOfBirth"));
+        pause(1000);
+        String locatorDay = String.format("dateOfBirthInput", startDate1[1]);
+        click(By.xpath(locatorDay));
+        pause(1000);
+        String locatorMonth = String.format("dateOfBirthInput", startDate2[1]);
+        click(By.xpath(locatorMonth));
+        pause(1000);
+        String locatorYear = String.format("dateOfBirthInput", startDate3[1]);
+        click(By.xpath(locatorYear));
+        pause(1000);
+    }
+    default void hideAdvertising() {
+        System.out.println("clicked on advertising");
+        JavascriptExecutor js = (JavascriptExecutor) wd;
+        js.executeScript("document.querySelector('#adplus-anchor').style.display='none';");
     }
 }
