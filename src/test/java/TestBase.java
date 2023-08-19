@@ -9,7 +9,7 @@ public class TestBase implements AppManager {
         init();
     }
 
-    @AfterSuite(alwaysRun = true)
+    @AfterSuite
     public void stop(){
 //        tearDown();
     }

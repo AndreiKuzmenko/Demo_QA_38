@@ -5,18 +5,22 @@ import models.Gender;
 import models.Hobby;
 import models.StudentDTO;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 import java.util.List;
 
 public interface HelperStudent extends HelperBase{
 
     default void selectForms(){
+        if(isElementPresent(By.id("adplus-anchor"))){
+            hideAds();
+        }
         click(By.xpath("//div[@class='category-cards']/div[2]"));
     }
     default void selectPracticeForm(){
-        click(By.id("item-0"));
+        click(By.xpath("//span[.='Practice Form']"));
     }
 
     default void fillForm(StudentDTO studentDTO){
@@ -25,24 +29,55 @@ public interface HelperStudent extends HelperBase{
         type(By.id("userEmail"), studentDTO.getEmail());
         selectGender(studentDTO.getGender());
         type(By.id("userNumber"), studentDTO.getPhone());
-        type(By.id("dateOfBirthInput"), studentDTO.getBirthday());
+//        type(By.id("dateOfBirthInput"), studentDTO.getBirthday());
+//        typeBDay(studentDTO.getBirthday());
+        typeBDaySelect(studentDTO.getBirthday());
         addSubject(studentDTO.getSubjects());
         selectHobby(studentDTO.getHobbies());
+        uploadPicture();
         type(By.id("currentAddress"), studentDTO.getAddress());
         typeState(studentDTO.getState());
         typeCity(studentDTO.getCity());
     }
 
     default void typeBDay(String birthday){
+        WebElement date = wd.findElement(By.id("dateOfBirthInput"));
+        date.click();
+        String os = System.getProperty("os.name");
+        System.out.println(os);
+        if(os.startsWith("Win")){
+            date.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        } else {
+            date.sendKeys(Keys.chord(Keys.COMMAND, "a"));
+        }
+        date.sendKeys(birthday);
+        date.sendKeys(Keys.ENTER);
+    }
+
+    default void typeBDaySelect(String birthday){
+        // 06 29 2000
+        String[] date = birthday.split(" ");
+        click(By.id("dateOfBirthInput"));
+        new Select(wd.findElement(By.className("react-datepicker__month-select"))).selectByValue("" + (Integer.parseInt(date[0]) - 1));
+//        System.out.println(date[0]);
+        new Select(wd.findElement(By.className("react-datepicker__year-select"))).selectByValue(date[2]);
+        String day = String.format("//div[.='%s']", date[1]);
+        List<WebElement> days = wd.findElements(By.xpath(day));
+        if(days.size() > 1 && Integer.parseInt(date[1]) > 15){
+            days.get(1).click();
+        } else {
+            days.get(0).click();
+        }
+//        click(By.xpath("//div[.='" + date[1] + "']"));
     }
 
     default void selectGender(Gender gender){
         if(gender.equals(Gender.MALE)){
-            click(By.id("gender-radio-1"));
+            click(By.xpath("//label[@for='gender-radio-1']"));
         } else if (gender.equals(Gender.FEMALE)){
-            click(By.id("gender-radio-2"));
+            click(By.xpath("//label[@for='gender-radio-2']"));
         } else {
-            click(By.id("gender-radio-3"));
+            click(By.xpath("//label[@for='gender-radio-3']"));
         }
     }
 
@@ -61,16 +96,20 @@ public interface HelperStudent extends HelperBase{
         for(Hobby hobby : hobbies){
             switch (hobby){
                 case SPORTS:
-                    click(By.id("hobbies-checkbox-1"));
+                    click(By.xpath("//label[@for='hobbies-checkbox-1']"));
                     break;
                 case READING:
-                    click(By.id("hobbies-checkbox-2"));
+                    click(By.xpath("//label[@for='hobbies-checkbox-2']"));
                     break;
                 case MUSIC:
-                    click(By.id("hobbies-checkbox-3"));
+                    click(By.xpath("//label[@for='hobbies-checkbox-3']"));
                     break;
             }
         }
+    }
+
+    default void uploadPicture(){
+        wd.findElement(By.id("uploadPicture")).sendKeys("C:\\Users\\97258\\Documents\\GitHub\\QA_38\\Demo_QA_38\\download.jpg");
     }
 
     default void typeState(String state){
@@ -84,27 +123,5 @@ public interface HelperStudent extends HelperBase{
 
     default void submit(){
         click(By.id("submit"));
-    }
-
-    default void dataOfBirthday(String day, String month, String year){
-        String[] startDate1 = day.split(" ");
-        String[] startDate2 = month.split(" ");
-        String[] startDate3 = year.split(" ");
-        click(By.id("dateOfBirth"));
-        pause(1000);
-        String locatorDay = String.format("dateOfBirthInput", startDate1[1]);
-        click(By.xpath(locatorDay));
-        pause(1000);
-        String locatorMonth = String.format("dateOfBirthInput", startDate2[1]);
-        click(By.xpath(locatorMonth));
-        pause(1000);
-        String locatorYear = String.format("dateOfBirthInput", startDate3[1]);
-        click(By.xpath(locatorYear));
-        pause(1000);
-    }
-    default void hideAdvertising() {
-        System.out.println("clicked on advertising");
-        JavascriptExecutor js = (JavascriptExecutor) wd;
-        js.executeScript("document.querySelector('#adplus-anchor').style.display='none';");
     }
 }
